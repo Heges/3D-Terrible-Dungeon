@@ -16,6 +16,7 @@ namespace TerribleDungeon
         public int widthDungeon;
         public int heightDungeon;
         public int numberOfOperations;
+        public bool shouldDrawOnlyCubes;
 
         void Start()
         {
@@ -57,6 +58,9 @@ namespace TerribleDungeon
                     }
                 }
             }
+
+            GenerateMesh meshGenerator = GetComponent<GenerateMesh>();
+            meshGenerator.GenerateMeshFromMap(borderedMap, 1f);
         }
 
         private void GenerateArrayOfMap(BspTree tree)
@@ -96,18 +100,22 @@ namespace TerribleDungeon
 
         private void OnDrawGizmos()
         {
-            if (borderedMap != null)
+            if (shouldDrawOnlyCubes)
             {
-                for (int x = 0; x < borderedMap.GetLength(0); x++)
+                if (borderedMap != null)
                 {
-                    for (int y = 0; y < borderedMap.GetLength(1); y++)
+                    for (int x = 0; x < borderedMap.GetLength(0); x++)
                     {
-                       Gizmos.color = borderedMap[x,y] == 0 ? Color.white : Color.black;
-                        Vector3 pos = new Vector3(x, y, 0);
-                        Gizmos.DrawCube(pos, Vector3.one * 0.5f);
+                        for (int y = 0; y < borderedMap.GetLength(1); y++)
+                        {
+                            Gizmos.color = borderedMap[x, y] == 0 ? Color.white : Color.black;
+                            Vector3 pos = new Vector3(x, y, 0);
+                            Gizmos.DrawCube(pos, Vector3.one * 0.5f);
+                        }
                     }
                 }
             }
+            
         }
         
         void Update()
