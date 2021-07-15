@@ -32,6 +32,8 @@ namespace TerribleDungeon
         {
             
             worldMap = new int[widthDungeon, heightDungeon];
+            survivingRooms = new List<Room>();
+
             for (int x = 0; x < worldMap.GetLength(0); x++)
             {
                 for (int y = 0; y < worldMap.GetLength(1); y++)
@@ -44,24 +46,31 @@ namespace TerribleDungeon
             dungeonTree = BspTree.Split(numberOfOperations, dungeonRect);
             BspTree.GenerateRoomInsideContainersNode(dungeonTree);
             GenerateArrayOfMap(dungeonTree);
-
-            List <List<Coord>> roomsRegion = GetRegions(0);
-            survivingRooms = new List<Room>();
-
-            foreach (var room in roomsRegion)
+            foreach (Room room in survivingRooms)
             {
-                if (room.Count < roomTreesholdWhatNeedDestroy)
+                if (room.roomSize < roomTreesholdWhatNeedDestroy)
                 {
-                    foreach (var tile in room)
+                    foreach (Coord tile in room.tiles)
                     {
                         worldMap[tile.coordTileX, tile.coordTileY] = 1;
                     }
                 }
-                else
-                {
-                    survivingRooms.Add(new Room(room, worldMap));
-                }
             }
+            //List <List<Coord>> roomsRegion = GetRegions(0);
+            //foreach (var room in roomsRegion)
+            //{
+            //    if (room.Count < roomTreesholdWhatNeedDestroy)
+            //    {
+            //        foreach (var tile in room)
+            //        {
+            //            worldMap[tile.coordTileX, tile.coordTileY] = 1;
+            //        }
+            //    }
+            //    else
+            //    {
+            //        survivingRooms.Add(new Room(room, worldMap));
+            //    }
+            //}
             survivingRooms.Sort();
 
             int borderSize = 10;
@@ -99,6 +108,7 @@ namespace TerribleDungeon
                 }
             }else if(tree.IsLeaf())
             {
+                List<Coord> tiles = new List<Coord>();
                 for (int x = 0; x < tree.room.width; x++)
                 {
                     for (int y = 0; y < tree.room.height; y++)
@@ -111,18 +121,17 @@ namespace TerribleDungeon
                             if (posX > 0 && posX < widthDungeon - 1 && posY > 0 && posY < heightDungeon - 1)
                             {
                                 worldMap[posX, posY] = 0;
+                                tiles.Add(new Coord(posX, posY));
                             }
                             else
                             {
                                 worldMap[posX, posY] = 1;
                             }
-                            //if (x >= 0 && y >= 0 && x < tree.room.width && y < tree.room.height  )
-                            //{
-                            //    worldMap[posX, posY] = 0;
-                            //}
                         }
                     }
                 }
+                Room newRoom = new Room(tiles, worldMap);
+                survivingRooms.Add(newRoom);
             }
         }
 

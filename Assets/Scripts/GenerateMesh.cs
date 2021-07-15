@@ -21,6 +21,9 @@ namespace TerribleDungeon
         {
             vertices = new List<Vector3>();
             triangles = new List<int>();
+            outlines.Clear();
+            triangleDictionary.Clear();
+            checkedVertices.Clear();
 
             squareGrid = new SquareGrid(map, squareSize);
             for (int i = 0; i < squareGrid.squares.GetLength(0); i++)
@@ -34,13 +37,26 @@ namespace TerribleDungeon
             dungeonMesh.mesh = mesh;
             mesh.vertices = vertices.ToArray();
             mesh.triangles = triangles.ToArray();
+
+            int tileAmount = 10;
+            Vector2[] uvs = new Vector2[vertices.Count];
+            for (int i = 0; i < vertices.Count; i++)
+            {
+                float percentegeX = Mathf.InverseLerp(-map.GetLength(0) / 2 * squareSize, map.GetLength(0) / 2 * squareSize, vertices[i].x) * tileAmount;
+                float percentegeY = Mathf.InverseLerp(-map.GetLength(0) / 2 * squareSize, map.GetLength(0) / 2 * squareSize, vertices[i].z) * tileAmount;
+                uvs[i] = new Vector2(percentegeX, percentegeY);
+            }
+            mesh.uv = uvs;
+
             mesh.RecalculateNormals();
 
-            CreateWallMesh();
+            CreateWallMesh(map, squareSize);
         }
 
-        void CreateWallMesh()
+        void CreateWallMesh(int[,] map, float squareSize)
         {
+            
+
             CallculateWallMeshOutlines();
 
             List<Vector3> wallVertices = new List<Vector3>();
@@ -69,8 +85,18 @@ namespace TerribleDungeon
 
             wallMesh.vertices = wallVertices.ToArray();
             wallMesh.triangles = wallTriangles.ToArray();
-
             walls.mesh = wallMesh;
+
+            int tileAmount = 1;
+            Vector2[] uvs = new Vector2[wallVertices.Count];
+            for (int i = 0; i < wallVertices.Count; i++)
+            {
+                float percentegeX = Mathf.InverseLerp(-map.GetLength(0) / 2 * squareSize, map.GetLength(0) / 2 * squareSize, wallVertices[i].x) * tileAmount;
+                float percentegeY = Mathf.InverseLerp(-map.GetLength(0) / 2 * squareSize, map.GetLength(0) / 2 * squareSize, wallVertices[i].y) * tileAmount;
+                uvs[i] = new Vector2(percentegeX, percentegeY);
+            }
+            walls.mesh.uv = uvs;
+
             walls.mesh.RecalculateNormals();
         }
 
