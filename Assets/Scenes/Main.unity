@@ -485,9 +485,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   widthDungeon: 80
-  heightDungeon: 40
+  heightDungeon: 80
   numberOfOperations: 4
-  shouldDrawOnlyCubes: 0
+  shouldDrawOnlyCubes: 1
+  shouldDrawOnlyCubesWorldMap: 0
+  shouldDrawOnlyRooms: 0
 --- !u!4 &1574863358
 Transform:
   m_ObjectHideFlags: 0
