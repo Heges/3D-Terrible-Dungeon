@@ -111,22 +111,22 @@ namespace TerribleDungeon
                 var heightRoom = node.container.height - randomY;// - (int)(randomY * Random.Range(1f, 1.5f));
                                                                  //var heightRoom = node.container.height - (int)(randomY * Random.Range(0.5f, 1.1f));
 
-                if (widthRoom > node.container.width)
-                {
-                    widthRoom = (int)(widthRoom * Random.Range(0.3f, 0.6f));
-                }
-                if (heightRoom > node.container.width)
-                {
-                    heightRoom = (int)(heightRoom * Random.Range(0.3f, 0.6f));
-                }
-                if (widthRoom < MIN_ROOM_SIZE)
-                {
-                    widthRoom = MIN_ROOM_SIZE;
-                }
-                if (heightRoom < MIN_ROOM_SIZE)
-                {
-                    heightRoom = MIN_ROOM_SIZE;
-                }
+                //if (widthRoom > node.container.width)
+                //{
+                //    widthRoom = (int)(widthRoom * Random.Range(0.3f, 0.6f));
+                //}
+                //if (heightRoom > node.container.width)
+                //{
+                //    heightRoom = (int)(heightRoom * Random.Range(0.3f, 0.6f));
+                //}
+                //if (widthRoom < MIN_ROOM_SIZE)
+                //{
+                //    widthRoom = MIN_ROOM_SIZE;
+                //}
+                //if (heightRoom < MIN_ROOM_SIZE)
+                //{
+                //    heightRoom = MIN_ROOM_SIZE;
+                //}
                 node.room = new RectInt(x, y, widthRoom, heightRoom);
             }
             else

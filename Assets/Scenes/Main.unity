@@ -305,8 +305,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 981589243}
-  - component: {fileID: 981589245}
   - component: {fileID: 981589244}
+  - component: {fileID: 981589245}
   m_Layer: 0
   m_Name: Walls
   m_TagString: Untagged
@@ -345,7 +345,7 @@ MeshRenderer:
   m_GameObject: {fileID: 981589242}
   m_Enabled: 1
   m_CastShadows: 1
-  m_ReceiveShadows: 1
+  m_ReceiveShadows: 0
   m_DynamicOccludee: 1
   m_MotionVectors: 1
   m_LightProbeUsage: 1
@@ -354,7 +354,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 0}
+  - {fileID: 2100000, guid: a18140bf7b2eeff4bb120a77ce3c95aa, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -416,7 +416,7 @@ MeshRenderer:
   m_GameObject: {fileID: 1451871561}
   m_Enabled: 1
   m_CastShadows: 1
-  m_ReceiveShadows: 1
+  m_ReceiveShadows: 0
   m_DynamicOccludee: 1
   m_MotionVectors: 1
   m_LightProbeUsage: 1
@@ -484,11 +484,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e70916a038100344c8026f715a3e5227, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  widthDungeon: 80
-  heightDungeon: 80
-  numberOfOperations: 4
-  shouldDrawOnlyCubes: 1
-  shouldDrawOnlyCubesWorldMap: 0
+  widthDungeon: 120
+  heightDungeon: 120
+  numberOfOperations: 6
+  roomTreesholdWhatNeedDestroy: 40
+  shouldDrawOnlyCubes: 0
+  shouldDrawOnlyWorldMap: 0
   shouldDrawOnlyRooms: 0
 --- !u!4 &1574863358
 Transform:
@@ -498,7 +499,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1574863356}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: -51, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1451871562}

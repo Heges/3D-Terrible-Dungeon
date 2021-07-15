@@ -18,6 +18,7 @@ namespace TerribleDungeon
         public int widthDungeon;
         public int heightDungeon;
         public int numberOfOperations;
+        public int roomTreesholdWhatNeedDestroy = 40;
         public bool shouldDrawOnlyCubes;
         public bool shouldDrawOnlyWorldMap;
         public bool shouldDrawOnlyRooms;
@@ -45,7 +46,6 @@ namespace TerribleDungeon
             GenerateArrayOfMap(dungeonTree);
 
             List <List<Coord>> roomsRegion = GetRegions(0);
-            int roomTreesholdWhatNeedDestroy = 20;
             survivingRooms = new List<Room>();
 
             foreach (var room in roomsRegion)

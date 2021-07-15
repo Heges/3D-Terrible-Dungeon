@@ -12,13 +12,14 @@ namespace TerribleDungeon
         public bool shouldDrawMarchingCubes;
 
         private List<int> triangles;
-        private List<Vector3> verticec;
-        private HashSet<int> checkedVerticec = new HashSet<int>();
+        private List<Vector3> vertices;
+        private HashSet<int> checkedVertices = new HashSet<int>();
         private Dictionary<int, List<Triangle>> triangleDictionary = new Dictionary<int, List<Triangle>>();
+        private List<List<int>> outlines = new List<List<int>>();
 
         public void GenerateMeshFromMap(int[,] map, float squareSize)
         {
-            verticec = new List<Vector3>();
+            vertices = new List<Vector3>();
             triangles = new List<int>();
 
             squareGrid = new SquareGrid(map, squareSize);
@@ -31,10 +32,120 @@ namespace TerribleDungeon
             }
             Mesh mesh = new Mesh();
             dungeonMesh.mesh = mesh;
-            mesh.vertices = verticec.ToArray();
+            mesh.vertices = vertices.ToArray();
             mesh.triangles = triangles.ToArray();
             mesh.RecalculateNormals();
 
+            CreateWallMesh();
+        }
+
+        void CreateWallMesh()
+        {
+            CallculateWallMeshOutlines();
+
+            List<Vector3> wallVertices = new List<Vector3>();
+            List<int> wallTriangles = new List<int>();
+            Mesh wallMesh = new Mesh();
+
+            foreach (List<int> outline in outlines)
+            {
+                for (int i = 0; i < outline.Count - 1; i++)
+                {
+                    int startIndex = wallVertices.Count;
+                    wallVertices.Add(vertices[outline[i]]); // left
+                    wallVertices.Add(vertices[outline[i + 1]]); //right
+                    wallVertices.Add(vertices[outline[i]] - Vector3.up * 10f); // bottom left
+                    wallVertices.Add(vertices[outline[i + 1]] - Vector3.up * 10f); // bottom right
+
+                    wallTriangles.Add(startIndex + 0);
+                    wallTriangles.Add(startIndex + 2);
+                    wallTriangles.Add(startIndex + 3);
+
+                    wallTriangles.Add(startIndex + 3);
+                    wallTriangles.Add(startIndex + 1);
+                    wallTriangles.Add(startIndex + 0);
+                }
+            }
+
+            wallMesh.vertices = wallVertices.ToArray();
+            wallMesh.triangles = wallTriangles.ToArray();
+
+            walls.mesh = wallMesh;
+            walls.mesh.RecalculateNormals();
+        }
+
+        void CallculateWallMeshOutlines()
+        {
+            for (int vertexIndex = 0; vertexIndex < vertices.Count; vertexIndex++)
+            {
+                if (!checkedVertices.Contains(vertexIndex))
+                {
+                    int newOutlineVertex = GetConnectedOutlineVertex(vertexIndex);
+                    if (newOutlineVertex != -1)
+                    {
+                        checkedVertices.Add(vertexIndex);
+
+                        List<int> newOutline = new List<int>();
+                        newOutline.Add(vertexIndex);
+                        outlines.Add(newOutline);
+                        FollowOutlines(newOutlineVertex, outlines.Count - 1);
+                        outlines[outlines.Count - 1].Add(vertexIndex);
+                    }
+                }
+            }
+        }
+
+        void FollowOutlines(int vertexIndex, int index)
+        {
+            outlines[index].Add(vertexIndex);
+            checkedVertices.Add(vertexIndex);
+
+            int nextOutlineConnectedVertex = GetConnectedOutlineVertex(vertexIndex);
+            if (nextOutlineConnectedVertex != -1)
+            {
+                FollowOutlines(nextOutlineConnectedVertex, index);
+            }
+        }
+
+        int GetConnectedOutlineVertex(int vertexIndex)
+        {
+            List<Triangle> trianglesContainsVertex = triangleDictionary[vertexIndex];
+            for (int index = 0; index < trianglesContainsVertex.Count; index++)
+            {
+                Triangle triangle = trianglesContainsVertex[index];
+
+                for (int i = 0; i < 3; i++)
+                {
+                    int vertexB = triangle[i];
+                    if (vertexB != vertexIndex && !checkedVertices.Contains(vertexB))
+                    {
+                        if (IsOutlineContainsVertex(vertexIndex, vertexB))
+                        {
+                            return vertexB;
+                        }
+                    }
+                }
+            }
+            return -1;
+        }
+
+        bool IsOutlineContainsVertex(int vertexA, int vertexB)
+        {
+            int sharedTrianglesCount = 0;
+            List<Triangle> trianglesContainsVertexA = triangleDictionary[vertexA];
+            for (int vertexIndex = 0; vertexIndex < trianglesContainsVertexA.Count; vertexIndex++)
+            {
+                if (trianglesContainsVertexA[vertexIndex].Contains(vertexB))
+                {
+                    sharedTrianglesCount++;
+                    if (sharedTrianglesCount > 1)
+                    {
+                        break;
+                    }
+                }
+                
+            }
+            return sharedTrianglesCount == 1;
         }
 
         private void TriangulateSquare(Square square)
@@ -43,61 +154,61 @@ namespace TerribleDungeon
             {
                 case 0:
                     break;
-                //case 1:
-                //    MeshFromPoint(square.centreLeft, square.centreBottom, square.bottomLeft);
-                //    break;
-                //case 2:
-                //    MeshFromPoint(square.bottomRight, square.centreBottom, square.bottomRight);
-                //    break;
-                //case 4:
-                //    MeshFromPoint(square.topRight, square.centreRight, square.centreTop);
-                //    break;
-                //case 8:
-                //    MeshFromPoint(square.topLeft, square.centreTop, square.centreLeft);
-                //    break;
-                //// 2 points
-                //case 3:
-                //    MeshFromPoint(square.centreRight, square.bottomRight, square.bottomLeft, square.centreLeft);
-                //    break;
-                //case 6:
-                //    MeshFromPoint(square.centreTop, square.topRight, square.bottomRight, square.centreBottom);
-                //    break;
-                //case 9:
-                //    MeshFromPoint(square.topLeft, square.centreTop, square.centreBottom, square.bottomLeft);
-                //    break;
-                //case 12:
-                //    MeshFromPoint(square.topLeft, square.topRight, square.centreRight, square.centreLeft);
-                //    break;
-                ////diagonal
-                //case 5:
-                //    MeshFromPoint(square.centreTop, square.topRight, square.centreRight, square.centreBottom, square.bottomLeft, square.centreLeft);
-                //    break;
-                //case 10:
-                //    MeshFromPoint(square.topLeft, square.centreTop, square.centreRight, square.bottomRight, square.centreBottom, square.centreLeft);
-                //    break;
-                ////end diagonal
-                ////3 points
-                //case 7:
-                //    MeshFromPoint(square.centreTop, square.topRight, square.bottomRight, square.bottomLeft, square.centreLeft);
-                //    break;
-                //case 11:
-                //    MeshFromPoint(square.topLeft, square.centreTop, square.centreRight, square.bottomRight, square.bottomLeft);
-                //    break;
-                //case 13:
-                //    MeshFromPoint(square.topLeft, square.topRight, square.centreRight, square.centreBottom, square.bottomLeft);
-                //    break;
-                //case 14:
-                //    MeshFromPoint(square.topLeft, square.topRight, square.bottomRight, square.centreBottom, square.centreLeft);
-                //    break;
+                case 1:
+                    MeshFromPoint(square.centreLeft, square.centreBottom, square.bottomLeft);
+                    break;
+                case 2:
+                    MeshFromPoint(square.bottomRight, square.centreBottom, square.bottomRight);
+                    break;
+                case 4:
+                    MeshFromPoint(square.topRight, square.centreRight, square.centreTop);
+                    break;
+                case 8:
+                    MeshFromPoint(square.topLeft, square.centreTop, square.centreLeft);
+                    break;
+                // 2 points
+                case 3:
+                    MeshFromPoint(square.centreRight, square.bottomRight, square.bottomLeft, square.centreLeft);
+                    break;
+                case 6:
+                    MeshFromPoint(square.centreTop, square.topRight, square.bottomRight, square.centreBottom);
+                    break;
+                case 9:
+                    MeshFromPoint(square.topLeft, square.centreTop, square.centreBottom, square.bottomLeft);
+                    break;
+                case 12:
+                    MeshFromPoint(square.topLeft, square.topRight, square.centreRight, square.centreLeft);
+                    break;
+                //diagonal
+                case 5:
+                    MeshFromPoint(square.centreTop, square.topRight, square.centreRight, square.centreBottom, square.bottomLeft, square.centreLeft);
+                    break;
+                case 10:
+                    MeshFromPoint(square.topLeft, square.centreTop, square.centreRight, square.bottomRight, square.centreBottom, square.centreLeft);
+                    break;
+                //end diagonal
+                //3 points
+                case 7:
+                    MeshFromPoint(square.centreTop, square.topRight, square.bottomRight, square.bottomLeft, square.centreLeft);
+                    break;
+                case 11:
+                    MeshFromPoint(square.topLeft, square.centreTop, square.centreRight, square.bottomRight, square.bottomLeft);
+                    break;
+                case 13:
+                    MeshFromPoint(square.topLeft, square.topRight, square.centreRight, square.centreBottom, square.bottomLeft);
+                    break;
+                case 14:
+                    MeshFromPoint(square.topLeft, square.topRight, square.bottomRight, square.centreBottom, square.centreLeft);
+                    break;
                
                 //4 points
                 case 15:
                     MeshFromPoint(square.topLeft, square.topRight, square.bottomRight, square.bottomLeft);
 
-                    checkedVerticec.Add(square.topLeft.vertexIdex);
-                    checkedVerticec.Add(square.topRight.vertexIdex);
-                    checkedVerticec.Add(square.bottomRight.vertexIdex);
-                    checkedVerticec.Add(square.bottomLeft.vertexIdex);
+                    //checkedVertices.Add(square.topLeft.vertexIdex);
+                    //checkedVertices.Add(square.topRight.vertexIdex);
+                    //checkedVertices.Add(square.bottomRight.vertexIdex);
+                    //checkedVertices.Add(square.bottomLeft.vertexIdex);
                     break;
                 default:
                     break;
@@ -144,8 +255,8 @@ namespace TerribleDungeon
             {
                 if (points[i].vertexIdex == -1)
                 {
-                    points[i].vertexIdex = verticec.Count;
-                    verticec.Add(points[i].position);
+                    points[i].vertexIdex = vertices.Count;
+                    vertices.Add(points[i].position);
                 }
             }
         }
