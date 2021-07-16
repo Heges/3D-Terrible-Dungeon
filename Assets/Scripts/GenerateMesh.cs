@@ -87,7 +87,7 @@ namespace TerribleDungeon
             wallMesh.triangles = wallTriangles.ToArray();
             walls.mesh = wallMesh;
 
-            int tileAmount = 1;
+            int tileAmount = 10;
             Vector2[] uvs = new Vector2[wallVertices.Count];
             for (int i = 0; i < wallVertices.Count; i++)
             {

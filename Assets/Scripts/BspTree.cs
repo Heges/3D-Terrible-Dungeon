@@ -9,6 +9,7 @@ namespace TerribleDungeon
         public BspTree left;
         public BspTree right;
         public int bspTreeId;
+        public Room tilesRoom;
 
         public  static int MIN_ROOM_SIZE = 4;
 

@@ -14,6 +14,7 @@ namespace TerribleDungeon
         int[,] worldMap;
         int[,] borderedMap;
         List<Room> survivingRooms;
+        List<List<Coord>> wallRegions;
 
         public int widthDungeon;
         public int heightDungeon;
@@ -41,11 +42,12 @@ namespace TerribleDungeon
                     worldMap[x, y] = 1;
                 }
             }
-
             RectInt dungeonRect = new RectInt(0, 0, widthDungeon, heightDungeon);
             dungeonTree = BspTree.Split(numberOfOperations, dungeonRect);
             BspTree.GenerateRoomInsideContainersNode(dungeonTree);
             GenerateArrayOfMap(dungeonTree);
+            GenerateCorridorInTree(dungeonTree);
+
             foreach (Room room in survivingRooms)
             {
                 if (room.roomSize < roomTreesholdWhatNeedDestroy)
@@ -56,6 +58,8 @@ namespace TerribleDungeon
                     }
                 }
             }
+            //wallRegions = GetRegions(1);
+
             //List <List<Coord>> roomsRegion = GetRegions(0);
             //foreach (var room in roomsRegion)
             //{
@@ -94,6 +98,54 @@ namespace TerribleDungeon
             meshGenerator.GenerateMeshFromMap(borderedMap, 1f);
         }
 
+        private void GenerateCorridorInTree(BspTree tree)
+        {
+            if (tree.IsInternal())
+            {
+                Room roomA = tree.left.tilesRoom;
+                Room roomB = tree.left.tilesRoom;
+
+                int bestDistance = 0;
+                bool isConnected = false;
+
+                if (roomA != null && roomB != null)
+                {
+                    for (int tilesRoomA = 0; tilesRoomA < roomA.edgeTiles.Count; tilesRoomA++)
+                    {
+                        for (int tilesRoomB = 0; tilesRoomB < roomB.edgeTiles.Count; tilesRoomB++)
+                        {
+                            Coord tileA = roomA.edgeTiles[tilesRoomA];
+                            Coord tileB = roomB.edgeTiles[tilesRoomB];
+
+                            Vector2 pointA = new Vector2(tileA.coordTileX, tileA.coordTileY);
+                            Vector2 pointB = new Vector2(tileB.coordTileX, tileB.coordTileY);
+
+                            var distance = Math.Pow(tileA.coordTileX - tileB.coordTileX, 2) + Math.Pow(tileA.coordTileY - tileB.coordTileY, 2);
+
+                            if (distance < bestDistance)
+                            {
+
+                            }
+                        }
+                    }
+                }
+
+                if (tree.left != null)
+                {
+                    GenerateCorridorInTree(tree.left);
+                }
+                if (tree.right != null)
+                {
+                    GenerateCorridorInTree(tree.right);
+                }
+            }
+
+            if (tree.IsLeaf())
+            {
+                //room here
+            }
+        }
+
         private void GenerateArrayOfMap(BspTree tree)
         {
             if (tree.IsInternal())
@@ -116,7 +168,7 @@ namespace TerribleDungeon
                         int posX = x + tree.room.x;
                         int posY = y + tree.room.y;
 
-                        if (MapIsInRange(posX,posY))// posX >= 0 && posX < widthDungeon && posY >= 0 && posY < heightDungeon)
+                        if (MapIsInRange(posX,posY))
                         {
                             if (posX > 0 && posX < widthDungeon - 1 && posY > 0 && posY < heightDungeon - 1)
                             {
@@ -131,6 +183,7 @@ namespace TerribleDungeon
                     }
                 }
                 Room newRoom = new Room(tiles, worldMap);
+                tree.tilesRoom = newRoom;
                 survivingRooms.Add(newRoom);
             }
         }
@@ -191,64 +244,9 @@ namespace TerribleDungeon
             return tiles;
         }
 
-        public struct Coord
-        {
-            public int coordTileX;
-            public int coordTileY;
-
-            public Coord(int a, int b)
-            {
-                coordTileX = a;
-                coordTileY = b;
-            }
-        }
-
         bool MapIsInRange(int x, int y)
         {
             return x >= 0 && x < widthDungeon && y >= 0 && y < heightDungeon;
-        }
-
-        public class Room : IComparable<Room>
-        {
-            public List<Coord> tiles;
-            public List<Coord> edgeTiles;
-
-            public int roomSize;
-            public bool disabled;
-
-            public Room()
-            {
-
-            }
-
-            public Room(List<Coord> tileList, int[,] map)
-            {
-                edgeTiles = new List<Coord>();
-                tiles = tileList;
-                roomSize = tiles.Count;
-
-                foreach (var tile in tiles)
-                {
-                    for (int x = tile.coordTileX - 1; x <= tile.coordTileX + 1; x++)
-                    {
-                        for (int y = tile.coordTileY - 1; y <= tile.coordTileY + 1; y++)
-                        {
-                            if (x == tile.coordTileX || y == tile.coordTileY)
-                            {
-                                if (map[x, y] == 1)
-                                {
-                                    edgeTiles.Add(tile);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            public int CompareTo(Room otherRoom)
-            {
-                return otherRoom.roomSize.CompareTo(roomSize);
-            }
         }
 
         void Update()
@@ -256,6 +254,25 @@ namespace TerribleDungeon
             if (Input.GetMouseButton(0))
             {
                 GenerateMap();
+            }
+        }
+
+        void DrawCircle(Coord c, int r)
+        {
+            for (int x = -r; x <= r; x++)
+            {
+                for (int y = -r; y <= r; y++)
+                {
+                    if (x * x + y * y <= r * r)
+                    {
+                        int drawX = c.coordTileX + x;
+                        int drawY = c.coordTileY + y;
+                        if (MapIsInRange(drawX, drawY))
+                        {
+                            worldMap[drawX, drawY] = 0;
+                        }
+                    }
+                }
             }
         }
 
@@ -294,6 +311,21 @@ namespace TerribleDungeon
 
             if (shouldDrawOnlyRooms)
             {
+                //wallRegions = GetRegions(1);
+
+                //if (wallRegions != null)
+                //{
+                //    foreach (var wallRegion in wallRegions)
+                //    {
+                //        foreach (var tile in wallRegion)
+                //        {
+                //            Gizmos.color = Color.black;
+                //            Vector3 pos = new Vector3(tile.coordTileX, tile.coordTileY, 0);
+                //            Gizmos.DrawCube(pos, Vector3.one * 0.5f);
+                //        }
+                //    }
+                //}
+
                 if (survivingRooms != null)
                 {
                     foreach (var room in survivingRooms)
