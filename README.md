@@ -1,3 +1,3 @@
 # 3D Terrible Dungeon
-procedural generatiog dungeon in 3D 
-![Screenshot_146](https://user-images.githubusercontent.com/28998924/126150788-2c2c0186-fe3e-4539-9365-d34f51036f07.png)
+procedural generatiog dungeon in 3D ![Screenshot_145](https://user-images.githubusercontent.com/28998924/126150919-da70adbd-e6d4-404d-8476-93229a83a84b.png)
+
