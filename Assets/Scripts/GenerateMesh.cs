@@ -55,8 +55,6 @@ namespace TerribleDungeon
 
         void CreateWallMesh(int[,] map, float squareSize)
         {
-            
-
             CallculateWallMeshOutlines();
 
             List<Vector3> wallVertices = new List<Vector3>();
@@ -184,7 +182,7 @@ namespace TerribleDungeon
                     MeshFromPoint(square.centreLeft, square.centreBottom, square.bottomLeft);
                     break;
                 case 2:
-                    MeshFromPoint(square.bottomRight, square.centreBottom, square.bottomRight);
+                    MeshFromPoint(square.centreRight, square.centreBottom, square.bottomRight);
                     break;
                 case 4:
                     MeshFromPoint(square.topRight, square.centreRight, square.centreTop);

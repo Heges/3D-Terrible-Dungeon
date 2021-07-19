@@ -31,7 +31,6 @@ namespace TerribleDungeon
 
         public void GenerateMap()
         {
-            
             worldMap = new int[widthDungeon, heightDungeon];
             survivingRooms = new List<Room>();
 
@@ -46,7 +45,8 @@ namespace TerribleDungeon
             dungeonTree = BspTree.Split(numberOfOperations, dungeonRect);
             BspTree.GenerateRoomInsideContainersNode(dungeonTree);
             GenerateArrayOfMap(dungeonTree);
-            GenerateCorridorInTree(dungeonTree);
+            //GenerateCorridorBetweenLeafs(dungeonTree);
+            GenerateCorridorsNode(dungeonTree);
 
             foreach (Room room in survivingRooms)
             {
@@ -98,45 +98,104 @@ namespace TerribleDungeon
             meshGenerator.GenerateMeshFromMap(borderedMap, 1f);
         }
 
-        private void GenerateCorridorInTree(BspTree tree)
+        private void GenerateCorridorsNode(BspTree node)
+        {
+            if (node.IsInternal())
+            {
+                RectInt leftContainer = node.left.container;
+                RectInt rightContainer = node.right.container;
+
+                Vector2 leftCenter = leftContainer.center;
+                Vector2 rightCenter = rightContainer.center;
+
+                Vector2 direction = (rightCenter - leftCenter).normalized;
+                //List<Coord> newList = new List<Coord>();
+
+                while (Vector2.Distance(leftCenter, rightCenter) > 1) // 1f
+                {
+                    if (direction.Equals(Vector2.right))
+                    {
+                        for (int i = 0; i < 4; i++)
+                        {
+                            int a = UnityEngine.Random.Range(0, 101);
+                            if (a < 81)
+                            {
+                                DrawRectangle(new Coord((int)leftCenter.x + i, (int)leftCenter.y), 6, 6);
+
+                            }
+                            else
+                            {
+                                DrawCircle(new Coord((int)leftCenter.x + i, (int)leftCenter.y), 4);
+                            }
+                            //newList.Add(new Coord((int)leftCenter.x + i, (int)leftCenter.y));
+                        }
+                        
+                    }
+                    if (direction.Equals(Vector2.up))
+                    {
+                        for (int i = 0; i < 4; i++)
+                        {
+                            int a = UnityEngine.Random.Range(0, 101);
+                            //DrawRectangle(new Coord((int)leftCenter.x + i, (int)leftCenter.y), 6, 6);
+                            if (a < 81)
+                            {
+                                DrawRectangle(new Coord((int)leftCenter.x + i, (int)leftCenter.y), 6, 6);
+
+
+                            }
+                            else
+                            {
+                                DrawCircle(new Coord((int)leftCenter.x, (int)leftCenter.y + i), 4);
+                            }
+                        }
+                    }
+                    leftCenter.x += direction.x; // direction normalized 
+                    leftCenter.y += direction.y; // direction normalized 
+                }
+                if (node.left != null) GenerateCorridorsNode(node.left);
+                if (node.right != null) GenerateCorridorsNode(node.right);
+            }
+        }
+
+        private void GenerateCorridorBetweenLeafs(BspTree tree)
         {
             if (tree.IsInternal())
             {
-                Room roomA = tree.left.tilesRoom;
-                Room roomB = tree.left.tilesRoom;
+                Room roomAtiles = tree.left.tilesRoom;
+                Room roomBtiles = tree.right.tilesRoom;
+                RectInt roomA = tree.left.room;
+                RectInt roomB = tree.right.room;
+                int bestDistance = int.MaxValue;
+                Coord bestTileA = new Coord(0, 0);
+                Coord bestTileB = new Coord(0, 0);
 
-                int bestDistance = 0;
-                bool isConnected = false;
-
-                if (roomA != null && roomB != null)
+                if (roomA.width != 0 && roomB.width != 0)
                 {
-                    for (int tilesRoomA = 0; tilesRoomA < roomA.edgeTiles.Count; tilesRoomA++)
+                    for (int tileInEdgeTilesRoomA = 0; tileInEdgeTilesRoomA < roomAtiles.edgeTiles.Count; tileInEdgeTilesRoomA++)
                     {
-                        for (int tilesRoomB = 0; tilesRoomB < roomB.edgeTiles.Count; tilesRoomB++)
+                        for (int tileInEdgeTilesRoomB = 0; tileInEdgeTilesRoomB < roomBtiles.edgeTiles.Count; tileInEdgeTilesRoomB++)
                         {
-                            Coord tileA = roomA.edgeTiles[tilesRoomA];
-                            Coord tileB = roomB.edgeTiles[tilesRoomB];
-
-                            Vector2 pointA = new Vector2(tileA.coordTileX, tileA.coordTileY);
-                            Vector2 pointB = new Vector2(tileB.coordTileX, tileB.coordTileY);
-
-                            var distance = Math.Pow(tileA.coordTileX - tileB.coordTileX, 2) + Math.Pow(tileA.coordTileY - tileB.coordTileY, 2);
-
-                            if (distance < bestDistance)
+                            int w = roomAtiles.edgeTiles[tileInEdgeTilesRoomA].coordTileX - roomBtiles.edgeTiles[tileInEdgeTilesRoomB].coordTileX;
+                            int h = roomAtiles.edgeTiles[tileInEdgeTilesRoomA].coordTileY - roomBtiles.edgeTiles[tileInEdgeTilesRoomB].coordTileY;
+                            int distanceBetweenPoints = (int)(Mathf.Pow(w, 2) + Mathf.Pow(h, 2));
+                            if (distanceBetweenPoints < bestDistance)
                             {
-
+                                bestDistance = distanceBetweenPoints;
+                                bestTileA = roomAtiles.edgeTiles[tileInEdgeTilesRoomA];
+                                bestTileB = roomBtiles.edgeTiles[tileInEdgeTilesRoomB];
                             }
                         }
                     }
                 }
+                GoCreatePassage(bestTileA, bestTileB);
 
                 if (tree.left != null)
                 {
-                    GenerateCorridorInTree(tree.left);
+                    GenerateCorridorBetweenLeafs(tree.left);
                 }
                 if (tree.right != null)
                 {
-                    GenerateCorridorInTree(tree.right);
+                    GenerateCorridorBetweenLeafs(tree.right);
                 }
             }
 
@@ -144,6 +203,93 @@ namespace TerribleDungeon
             {
                 //room here
             }
+        }
+
+        private void GoCreatePassage(Coord tileA, Coord tileB)
+        {
+            //Debug.Log("GoCreatePassage" + tileA.coordTileX + ":" + tileA.coordTileY);
+            //Debug.Log("GoCreatePassage" + tileB.coordTileX + ":" + tileB.coordTileY);
+            List<Coord> line = GetLine(tileA, tileB);
+            foreach (var tile in line)
+            {
+                int a = UnityEngine.Random.Range(0, 101);
+                if (a < 78)
+                {
+                    DrawRectangle(tile, 6, 6);
+
+                }
+                else
+                {
+                    DrawCircle(tile, 2);
+                }
+                
+
+            }
+        }
+
+        private List<Coord> GetLine(Coord from, Coord to)
+        {
+            
+            List<Coord> line = new List<Coord>();
+
+            int x = from.coordTileX;
+            int y = from.coordTileY;
+
+            //if (from.coordTileX == to.coordTileX && from.coordTileY == to.coordTileY)
+            //{
+            //    line.Add(new Coord(x, y));
+            //    return line;
+            //}
+
+            int dx = to.coordTileX - from.coordTileX;
+            int dy = to.coordTileY - from.coordTileY;
+
+            int step = (int)Mathf.Sign(dx);
+            int gradientStep = (int)Mathf.Sign(dy);
+
+            bool isInverted = false;
+
+            int longest = Mathf.Abs(dx);
+            int shortest = Mathf.Abs(dy);
+
+            if (longest < shortest)
+            {
+                isInverted = true;
+                longest = Mathf.Abs(dy);
+                shortest = Mathf.Abs(dx);
+
+                step = (int)Mathf.Sign(dy);
+                gradientStep = (int)Mathf.Sign(dx);
+            }
+            int gradientAccumulation = longest / 2;
+
+            for (int i = 0; i < longest; i++)
+            {
+                line.Add(new Coord(x, y));
+
+                if (isInverted)
+                {
+                    y += step;
+                }
+                else
+                {
+                    x += step;
+                }
+                gradientAccumulation += shortest;
+                if (gradientAccumulation >= shortest)
+                {
+                    if (isInverted)
+                    {
+                        y += gradientStep;
+                    }
+                    else
+                    {
+                        x += gradientStep;
+                    }
+                    gradientAccumulation -= longest;
+                }
+            }
+            return line;
         }
 
         private void GenerateArrayOfMap(BspTree tree)
@@ -271,6 +417,22 @@ namespace TerribleDungeon
                         {
                             worldMap[drawX, drawY] = 0;
                         }
+                    }
+                }
+            }
+        }
+
+        void DrawRectangle(Coord c, int x, int y)
+        {
+            for (int i = 0; i < x; i++)
+            {
+                for (int j = 0; j < y; j++)
+                {
+                    int drawX = c.coordTileX + i;
+                    int drawY = c.coordTileY + j;
+                    if (MapIsInRange(drawX, drawY))
+                    {
+                        worldMap[drawX, drawY] = 0;
                     }
                 }
             }

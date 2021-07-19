@@ -27,14 +27,14 @@ namespace TerribleDungeon
 
         internal static BspTree Split(int numberOfOperations, RectInt container)
         {
-            var node = new BspTree(container);
+            BspTree node = new BspTree(container);
 
             if (numberOfOperations == 0)
             {
                 return node;
             }
 
-            var splitedContainer = SplitContainer(container);
+            RectInt[] splitedContainer = SplitContainer(container);
 
             node.left = Split(numberOfOperations - 1, splitedContainer[0]);
 
