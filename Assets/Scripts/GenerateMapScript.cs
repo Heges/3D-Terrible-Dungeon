@@ -20,6 +20,7 @@ namespace TerribleDungeon
         public int heightDungeon;
         public int numberOfOperations;
         public int roomTreesholdWhatNeedDestroy = 40;
+        public int wallsTreesholdWhatNeedDestroy = 40;
         public bool shouldDrawOnlyCubes;
         public bool shouldDrawOnlyWorldMap;
         public bool shouldDrawOnlyRooms;
@@ -58,24 +59,19 @@ namespace TerribleDungeon
                     }
                 }
             }
-            //wallRegions = GetRegions(1);
-
-            //List <List<Coord>> roomsRegion = GetRegions(0);
-            //foreach (var room in roomsRegion)
-            //{
-            //    if (room.Count < roomTreesholdWhatNeedDestroy)
-            //    {
-            //        foreach (var tile in room)
-            //        {
-            //            worldMap[tile.coordTileX, tile.coordTileY] = 1;
-            //        }
-            //    }
-            //    else
-            //    {
-            //        survivingRooms.Add(new Room(room, worldMap));
-            //    }
-            //}
             survivingRooms.Sort();
+
+            wallRegions = GetRegions(1);
+            foreach (var wallRegion in wallRegions)
+            {
+                if (wallRegion.Count < wallsTreesholdWhatNeedDestroy)
+                {
+                    foreach (var tile in wallRegion)
+                    {
+                        worldMap[tile.coordTileX, tile.coordTileY] = 0;
+                    }
+                }
+            }
 
             int borderSize = 10;
             borderedMap = new int[widthDungeon + borderSize * 2, heightDungeon + borderSize * 2];
@@ -115,37 +111,34 @@ namespace TerribleDungeon
                 {
                     if (direction.Equals(Vector2.right))
                     {
+                        int a = UnityEngine.Random.Range(0, 101);
+
                         for (int i = 0; i < 4; i++)
                         {
-                            int a = UnityEngine.Random.Range(0, 101);
                             if (a < 81)
                             {
                                 DrawRectangle(new Coord((int)leftCenter.x + i, (int)leftCenter.y), 6, 6);
-
                             }
                             else
                             {
                                 DrawCircle(new Coord((int)leftCenter.x + i, (int)leftCenter.y), 4);
                             }
-                            //newList.Add(new Coord((int)leftCenter.x + i, (int)leftCenter.y));
                         }
                         
                     }
                     if (direction.Equals(Vector2.up))
                     {
+                        int a = UnityEngine.Random.Range(0, 101);
+
                         for (int i = 0; i < 4; i++)
                         {
-                            int a = UnityEngine.Random.Range(0, 101);
-                            //DrawRectangle(new Coord((int)leftCenter.x + i, (int)leftCenter.y), 6, 6);
                             if (a < 81)
                             {
                                 DrawRectangle(new Coord((int)leftCenter.x + i, (int)leftCenter.y), 6, 6);
-
-
                             }
                             else
                             {
-                                DrawCircle(new Coord((int)leftCenter.x, (int)leftCenter.y + i), 4);
+                                DrawCircle(new Coord((int)leftCenter.x, (int)leftCenter.y + i), 3);
                             }
                         }
                     }

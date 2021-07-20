@@ -182,7 +182,8 @@ namespace TerribleDungeon
                     MeshFromPoint(square.centreLeft, square.centreBottom, square.bottomLeft);
                     break;
                 case 2:
-                    MeshFromPoint(square.centreRight, square.centreBottom, square.bottomRight);
+                    //MeshFromPoint(square.centreRight, square.centreBottom, square.bottomRight);
+                    MeshFromPoint(square.bottomRight, square.centreBottom, square.centreRight);
                     break;
                 case 4:
                     MeshFromPoint(square.topRight, square.centreRight, square.centreTop);
