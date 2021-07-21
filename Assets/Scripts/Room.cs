@@ -42,6 +42,18 @@ namespace TerribleDungeon
             }
         }
 
+        public bool ContainsTileInTiles(Coord c)
+        {
+            foreach (var edgeTile in edgeTiles)
+            {
+                if (c.coordTileX == edgeTile.coordTileX && c.coordTileY == edgeTile.coordTileY)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public int CompareTo(Room otherRoom)
         {
             return otherRoom.roomSize.CompareTo(roomSize);

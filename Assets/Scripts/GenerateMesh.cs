@@ -83,6 +83,7 @@ namespace TerribleDungeon
 
             wallMesh.vertices = wallVertices.ToArray();
             wallMesh.triangles = wallTriangles.ToArray();
+
             walls.mesh = wallMesh;
 
             int tileAmount = 10;
@@ -94,6 +95,13 @@ namespace TerribleDungeon
                 uvs[i] = new Vector2(percentegeX, percentegeY);
             }
             walls.mesh.uv = uvs;
+
+            if (walls.GetComponent<MeshCollider>())
+            {
+                Destroy(walls.GetComponent<MeshCollider>());
+            }
+            MeshCollider wallCollider = walls.gameObject.AddComponent<MeshCollider>();
+            wallCollider.sharedMesh = wallMesh;
 
             walls.mesh.RecalculateNormals();
         }

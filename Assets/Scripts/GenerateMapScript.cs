@@ -13,8 +13,10 @@ namespace TerribleDungeon
 
         int[,] worldMap;
         int[,] borderedMap;
-        List<Room> survivingRooms;
-        List<List<Coord>> wallRegions;
+        public List<Room> survivingRooms;
+        public List<List<Coord>> wallRegions;
+
+        public GameObject player;
 
         public int widthDungeon;
         public int heightDungeon;
@@ -34,6 +36,11 @@ namespace TerribleDungeon
         {
             worldMap = new int[widthDungeon, heightDungeon];
             survivingRooms = new List<Room>();
+            var hero = GameObject.FindGameObjectWithTag("Player");
+            if (hero)
+            {
+                Destroy(hero);
+            }
 
             for (int x = 0; x < worldMap.GetLength(0); x++)
             {
@@ -92,6 +99,22 @@ namespace TerribleDungeon
 
             GenerateMesh meshGenerator = GetComponent<GenerateMesh>();
             meshGenerator.GenerateMeshFromMap(borderedMap, 1f);
+
+            int index = 0;//survivingRooms.Count - 1;
+            Vector3 posToCreatePlayer = new Vector3(0,0,0);
+            for (int i = 0; i < survivingRooms[index].tiles.Count; i++)
+            {
+                Coord newCoord = new Coord(survivingRooms[index].tiles[i].coordTileX, survivingRooms[index].tiles[i].coordTileY);
+                if (!survivingRooms[index].ContainsTileInTiles(newCoord))
+                {
+                    posToCreatePlayer = new Vector3((-widthDungeon/2 + newCoord.coordTileX * Vector3.right.x), 0, -heightDungeon/2 + newCoord.coordTileY * Vector3.forward.z);
+                    //GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                    //cube.transform.position = posToCreatePlayer;
+                    //Instantiate(player, posToCreatePlayer, Quaternion.identity, transform);
+                    break;
+                }
+            }
+            GameObject toInstantiante = Instantiate(player, posToCreatePlayer, Quaternion.identity, transform);
         }
 
         private void GenerateCorridorsNode(BspTree node)
